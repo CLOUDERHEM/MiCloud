@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/clouderhem/micloud/authorizer"
-	"github.com/clouderhem/micloud/authorizer/cookie"
+	"github.com/clouderhem/micloud/client"
 	"github.com/clouderhem/micloud/utility/request"
 	"github.com/clouderhem/micloud/utility/validate"
 	"net/http"
@@ -20,7 +19,7 @@ const (
 	deleteGalleryApi = "https://i.mi.com/gallery/info/delete"
 )
 
-func ListGalleries(query GalleriesQuery) (Galleries, error) {
+func ListGalleries(client *client.Client, query GalleriesQuery) (Galleries, error) {
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
 	q := []request.UrlQuery{
 		{"ts", ts},
@@ -31,14 +30,14 @@ func ListGalleries(query GalleriesQuery) (Galleries, error) {
 		{"albumId", query.AlbumId},
 	}
 
-	body, r, err := authorizer.DoRequest(request.NewGet(galleriesApi, q))
+	body, r, err := client.DoRequest(request.NewGet(galleriesApi, q))
 	if err != nil {
 		return Galleries{}, err
 	}
 	return validate.Validate[Galleries](r, body)
 }
 
-func GetGalleryStorageUrl(id string) (string, error) {
+func GetGalleryStorageUrl(client *client.Client, id string) (string, error) {
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
 	q := []request.UrlQuery{
 		{"ts", ts},
@@ -46,7 +45,7 @@ func GetGalleryStorageUrl(id string) (string, error) {
 		{"callBack", fmt.Sprintf("dl_img_cb_%s_0", ts)},
 	}
 
-	body, r, err := authorizer.DoRequest(request.NewGet(storageApi, q))
+	body, r, err := client.DoRequest(request.NewGet(storageApi, q))
 	if err != nil {
 		return "", err
 	}
@@ -58,12 +57,12 @@ func GetGalleryStorageUrl(id string) (string, error) {
 	return data.Url, nil
 }
 
-func GetGalleryFile(storageUrl string) (GalleryFile, error) {
+func GetGalleryFile(client *client.Client, storageUrl string) (GalleryFile, error) {
 	req, err := http.NewRequest(http.MethodGet, storageUrl, nil)
 	if err != nil {
 		return GalleryFile{}, err
 	}
-	body, r, err := authorizer.DoRequest(req)
+	body, r, err := client.DoRequest(req)
 	if err != nil {
 		return GalleryFile{}, err
 	}
@@ -80,13 +79,13 @@ func GetGalleryFile(storageUrl string) (GalleryFile, error) {
 	return file, nil
 }
 
-func DeleteGallery(id string) error {
+func DeleteGallery(client *client.Client, id string) error {
 	q := []request.UrlQuery{
 		{"id", id},
-		{"serviceToken", cookie.GetValueFromMicloudCookie("serviceToken")},
+		{"serviceToken", client.MiAccount.GetServiceToken()},
 	}
 
-	body, r, err := authorizer.DoRequest(request.NewGet(deleteGalleryApi, q))
+	body, r, err := client.DoRequest(request.NewGet(deleteGalleryApi, q))
 	if err != nil {
 		return err
 	}

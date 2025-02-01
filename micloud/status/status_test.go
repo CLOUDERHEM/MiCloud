@@ -1,9 +1,15 @@
 package statusmgr
 
-import "testing"
+import (
+	"github.com/clouderhem/micloud/client"
+	"testing"
+)
 
 func TestGetDetail(t *testing.T) {
-	detail, err := GetDetail()
+	s := Status{
+		Client: client.GlobalClient,
+	}
+	detail, err := s.GetDetail()
 	if err != nil {
 		t.Error(err)
 	}
@@ -13,7 +19,10 @@ func TestGetDetail(t *testing.T) {
 }
 
 func TestRenewal(t *testing.T) {
-	renewal, err := Renewal()
+	s := Status{
+		Client: client.GlobalClient,
+	}
+	renewal, err := s.Renewal()
 	if err != nil {
 		t.Error(err)
 	}

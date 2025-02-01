@@ -2,7 +2,7 @@ package contact
 
 import (
 	"fmt"
-	"github.com/clouderhem/micloud/authorizer"
+	"github.com/clouderhem/micloud/client"
 	"github.com/clouderhem/micloud/utility/request"
 	"github.com/clouderhem/micloud/utility/validate"
 	"strconv"
@@ -13,7 +13,7 @@ const (
 	initData = "https://i.mi.com/contacts/initdata"
 )
 
-func ListContacts(limit int) (Contacts, error) {
+func ListContacts(client *client.Client, limit int) (Contacts, error) {
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
 	q := []request.UrlQuery{
 		{"ts", ts},
@@ -23,7 +23,7 @@ func ListContacts(limit int) (Contacts, error) {
 		{"syncIgnoreTag", "0"},
 	}
 
-	body, r, err := authorizer.DoRequest(request.NewGet(initData, q))
+	body, r, err := client.DoRequest(request.NewGet(initData, q))
 	if err != nil {
 		return Contacts{}, err
 	}

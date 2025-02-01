@@ -1,7 +1,6 @@
 package request
 
 import (
-	"github.com/clouderhem/micloud/config"
 	"io"
 	"net/http"
 )
@@ -11,18 +10,16 @@ type UrlQuery struct {
 	Value string
 }
 
-func DoRequest(req *http.Request) (body []byte, resp *http.Response, err error) {
-	return doRequest(req, true)
-}
-
-func DoRequestNotReadBody(req *http.Request) (resp *http.Response, err error) {
-	_, resp, err = doRequest(req, false)
-	return
+func DoRequest(req *http.Request, opts ...Opt) (body []byte, resp *http.Response, err error) {
+	c := &Config{}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return doRequest(req, c)
 }
 
 func NewGet(url string, queries []UrlQuery) *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
-
 	q := req.URL.Query()
 	for _, kv := range queries {
 		q.Add(kv.Key, kv.Value)
@@ -32,23 +29,20 @@ func NewGet(url string, queries []UrlQuery) *http.Request {
 	return req
 }
 
-func doRequest(req *http.Request, readBody bool) (body []byte, resp *http.Response, err error) {
+func doRequest(req *http.Request, c *Config) (body []byte, resp *http.Response, err error) {
 	client := http.DefaultClient
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
-	client.Timeout = config.Timeout
+	client.Timeout = c.Timeout
 	defer client.CloseIdleConnections()
 
 	resp, err = client.Do(req)
 	if err != nil {
 		return nil, resp, err
 	}
+	defer resp.Body.Close()
 
-	if readBody {
-		defer resp.Body.Close()
-		data, err := io.ReadAll(resp.Body)
-		return data, resp, err
-	}
-	return nil, resp, nil
+	data, err := io.ReadAll(resp.Body)
+	return data, resp, err
 }

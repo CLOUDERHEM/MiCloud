@@ -2,11 +2,15 @@ package devicemgr
 
 import (
 	"fmt"
+	"github.com/clouderhem/micloud/client"
 	"testing"
 )
 
 func TestListDevices(t *testing.T) {
-	devices, err := ListDevices()
+	d := Device{
+		Client: client.GlobalClient,
+	}
+	devices, err := d.ListDevices()
 	if err != nil {
 		t.Error(err)
 	}
@@ -16,7 +20,10 @@ func TestListDevices(t *testing.T) {
 }
 
 func TestGetDeviceStatus(t *testing.T) {
-	status, err := GetDeviceStatus()
+	d := Device{
+		Client: client.GlobalClient,
+	}
+	status, err := d.GetDeviceStatus()
 	if err != nil {
 		t.Error(err)
 	}

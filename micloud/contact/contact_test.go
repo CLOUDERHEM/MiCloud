@@ -2,11 +2,15 @@ package contactmgr
 
 import (
 	"fmt"
+	"github.com/clouderhem/micloud/client"
 	"testing"
 )
 
 func TestListContacts(t *testing.T) {
-	contacts, err := ListContacts(200)
+	c := Contact{
+		Client: client.GlobalClient,
+	}
+	contacts, err := c.ListContacts(200)
 	if err != nil {
 		t.Error(err)
 	}

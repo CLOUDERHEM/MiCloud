@@ -7,7 +7,7 @@ access various services and functionalities offered by [Xiaomi Cloud](https://i.
 
 ## Usage
 
-Todo
+See `micloud/micloud_test.go`
 
 ## Examples
 

@@ -2,12 +2,14 @@ package gallerymgr
 
 import (
 	"fmt"
+	"github.com/clouderhem/micloud/client"
 	"github.com/clouderhem/micloud/micloud/gallery/gallery"
 	"testing"
 )
 
 func TestListAlbums(t *testing.T) {
-	albums, err := ListAlbums(0, 10, false)
+	g := Gallery{Client: client.GlobalClient}
+	albums, err := g.ListAlbums(0, 10, false)
 	if err != nil {
 		t.Error(err)
 	}
@@ -18,7 +20,8 @@ func TestListAlbums(t *testing.T) {
 }
 
 func TestListGalleries(t *testing.T) {
-	galleries, err := ListGalleries(gallery.GalleriesQuery{
+	g := Gallery{Client: client.GlobalClient}
+	galleries, err := g.ListGalleries(gallery.GalleriesQuery{
 		StartDate: 20210226,
 		EndDate:   20210226,
 		PageNum:   0,
@@ -35,7 +38,8 @@ func TestListGalleries(t *testing.T) {
 }
 
 func TestGetTimeline(t *testing.T) {
-	timeline, err := GetTimeline("1")
+	g := Gallery{Client: client.GlobalClient}
+	timeline, err := g.GetTimeline("1")
 	if err != nil {
 		t.Error(err)
 	}
@@ -46,14 +50,16 @@ func TestGetTimeline(t *testing.T) {
 }
 
 func TestDeleteGallery(t *testing.T) {
-	err := DeleteGallery("1")
+	g := Gallery{Client: client.GlobalClient}
+	err := g.DeleteGallery("1")
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestGetGalleryFileUrl(t *testing.T) {
-	url, err := GetGalleryStorageUrl("1")
+	g := Gallery{Client: client.GlobalClient}
+	url, err := g.GetGalleryStorageUrl("1")
 	if err != nil {
 		t.Error(err)
 	}

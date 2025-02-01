@@ -2,7 +2,7 @@ package message
 
 import (
 	"fmt"
-	"github.com/clouderhem/micloud/authorizer"
+	"github.com/clouderhem/micloud/client"
 	"github.com/clouderhem/micloud/utility/request"
 	"github.com/clouderhem/micloud/utility/validate"
 	"strconv"
@@ -13,7 +13,7 @@ const (
 	fullThreadApi = "https://i.mi.com/sms/full/thread"
 )
 
-func ListMessages(syncTag, syncThreadTag string, limit int) (Messages, error) {
+func ListMessages(client *client.Client, syncTag, syncThreadTag string, limit int) (Messages, error) {
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
 	q := []request.UrlQuery{
 		{"ts", ts},
@@ -25,7 +25,7 @@ func ListMessages(syncTag, syncThreadTag string, limit int) (Messages, error) {
 		{"withPhoneCall", "false"},
 	}
 
-	body, r, err := authorizer.DoRequest(request.NewGet(fullThreadApi, q))
+	body, r, err := client.DoRequest(request.NewGet(fullThreadApi, q))
 	if err != nil {
 		return Messages{}, err
 	}

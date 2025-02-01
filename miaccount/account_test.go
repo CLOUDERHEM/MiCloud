@@ -1,13 +1,12 @@
 package miaccount
 
 import (
-	"github.com/clouderhem/micloud/authorizer/cookie"
 	"testing"
 )
 
 func TestGetMicloudCookie(t *testing.T) {
-	cookie.MiaccountCookieFilepath = "/misync/.miaccount_cookie"
-	micloudCookie, err := GetMicloudCookie()
+	account := New("")
+	micloudCookie, err := account.GenMiCloudCookie()
 	if err != nil {
 		t.Error(err)
 	}

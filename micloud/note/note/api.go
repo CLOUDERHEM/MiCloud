@@ -3,8 +3,7 @@ package note
 import (
 	"errors"
 	"fmt"
-	"github.com/clouderhem/micloud/authorizer"
-	"github.com/clouderhem/micloud/authorizer/cookie"
+	"github.com/clouderhem/micloud/client"
 	"github.com/clouderhem/micloud/utility/request"
 	"github.com/clouderhem/micloud/utility/validate"
 	"net/http"
@@ -23,26 +22,26 @@ const (
 	FileType = "note_img"
 )
 
-func ListNotes(limit int) (Notes, error) {
+func ListNotes(client *client.Client, limit int) (Notes, error) {
 	req, err := http.NewRequest(http.MethodGet,
 		fmt.Sprintf(fullPageApi, limit, time.Now().UnixMilli()), nil)
 	if err != nil {
 		return Notes{}, err
 	}
-	body, r, err := authorizer.DoRequest(req)
+	body, r, err := client.DoRequest(req)
 	if err != nil {
 		return Notes{}, err
 	}
 	return validate.Validate[Notes](r, body)
 }
 
-func GetNote(id string) (Note, error) {
+func GetNote(client *client.Client, id string) (Note, error) {
 	req, err := http.NewRequest(http.MethodGet,
 		fmt.Sprintf(noteApi, id, time.Now().UnixMilli()), nil)
 	if err != nil {
 		return Note{}, err
 	}
-	body, r, err := authorizer.DoRequest(req)
+	body, r, err := client.DoRequest(req)
 	if err != nil {
 		return Note{}, err
 	}
@@ -53,7 +52,7 @@ func GetNote(id string) (Note, error) {
 	return data.Entry, err
 }
 
-func DeleteNote(id, tag string, purge bool) error {
+func DeleteNote(client *client.Client, id, tag string, purge bool) error {
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf(deleteNoteApi, id), nil)
 	if err != nil {
 		return err
@@ -63,9 +62,9 @@ func DeleteNote(id, tag string, purge bool) error {
 	_ = req.ParseForm()
 	req.Form.Add("tag", tag)
 	req.Form.Add("purge", strconv.FormatBool(purge))
-	req.Form.Add("serviceToken", cookie.GetValueFromMicloudCookie("serviceToken"))
+	req.Form.Add("serviceToken", client.MiAccount.GetServiceToken())
 
-	body, r, err := authorizer.DoRequest(req)
+	body, r, err := client.DoRequest(req)
 	if err != nil {
 		return err
 	}
@@ -77,12 +76,12 @@ func DeleteNote(id, tag string, purge bool) error {
 	return nil
 }
 
-func GetNoteFileUrl(fileType, fileId string) (string, error) {
+func GetNoteFileUrl(client *client.Client, fileType, fileId string) (string, error) {
 	q := []request.UrlQuery{
 		{"type", fileType},
 		{"fileid", fileId},
 	}
-	_, r, err := authorizer.DoRequest(request.NewGet(fileApi, q))
+	_, r, err := client.DoRequest(request.NewGet(fileApi, q))
 	if err != nil {
 		return "", err
 	}

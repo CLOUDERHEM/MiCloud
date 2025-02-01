@@ -2,21 +2,26 @@ package gallerymgr
 
 import (
 	"errors"
+	"github.com/clouderhem/micloud/client"
 	"github.com/clouderhem/micloud/micloud/gallery/album"
 	"github.com/clouderhem/micloud/micloud/gallery/gallery"
 	"github.com/clouderhem/micloud/micloud/gallery/timeline"
 )
 
-func ListAlbums(pageNum, pageSize int, shared bool) (album.Albums, error) {
-	return album.ListAlbums(pageNum, pageSize, shared)
+type Gallery struct {
+	Client *client.Client
 }
 
-func ListGalleries(query gallery.GalleriesQuery) (gallery.Galleries, error) {
-	return gallery.ListGalleries(query)
+func (g *Gallery) ListAlbums(pageNum, pageSize int, shared bool) (album.Albums, error) {
+	return album.ListAlbums(g.Client, pageNum, pageSize, shared)
 }
 
-func GetGalleryStorageUrl(id string) (string, error) {
-	url, err := gallery.GetGalleryStorageUrl(id)
+func (g *Gallery) ListGalleries(query gallery.GalleriesQuery) (gallery.Galleries, error) {
+	return gallery.ListGalleries(g.Client, query)
+}
+
+func (g *Gallery) GetGalleryStorageUrl(id string) (string, error) {
+	url, err := gallery.GetGalleryStorageUrl(g.Client, id)
 	if err != nil {
 		return "", err
 	}
@@ -26,14 +31,14 @@ func GetGalleryStorageUrl(id string) (string, error) {
 	return url, err
 }
 
-func GetTimeline(albumId string) (timeline.Timeline, error) {
-	return timeline.GetTimeline(albumId)
+func (g *Gallery) GetTimeline(albumId string) (timeline.Timeline, error) {
+	return timeline.GetTimeline(g.Client, albumId)
 }
 
-func DeleteGallery(id string) error {
-	return gallery.DeleteGallery(id)
+func (g *Gallery) DeleteGallery(id string) error {
+	return gallery.DeleteGallery(g.Client, id)
 }
 
-func GetGalleryFile(storageUrl string) (gallery.GalleryFile, error) {
-	return gallery.GetGalleryFile(storageUrl)
+func (g *Gallery) GetGalleryFile(storageUrl string) (gallery.GalleryFile, error) {
+	return gallery.GetGalleryFile(g.Client, storageUrl)
 }

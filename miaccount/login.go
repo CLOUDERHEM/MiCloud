@@ -1,4 +1,4 @@
-package user
+package miaccount
 
 import (
 	"errors"
@@ -12,6 +12,10 @@ import (
 const (
 	loginUrl = "https://i.mi.com/api/user/login?&followUp=https%3A%2F%2Fi.mi.com%2F&_locale=zh_CN&ts="
 )
+
+type LoginUrl struct {
+	LoginUrl string `json:"loginUrl"`
+}
 
 func GetLoginUrl() (string, error) {
 	req := request.NewGet(loginUrl+fmt.Sprintf("%v", time.Now().UnixMilli()), nil)

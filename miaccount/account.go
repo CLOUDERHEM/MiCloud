@@ -2,29 +2,45 @@ package miaccount
 
 import (
 	"errors"
-	"github.com/clouderhem/micloud/authorizer/cookie"
-	usermgr "github.com/clouderhem/micloud/micloud/user"
 	"github.com/clouderhem/micloud/utility/parse"
 	"github.com/clouderhem/micloud/utility/request"
 	"strings"
+	"time"
 )
 
-func GetMicloudCookie() (string, error) {
-	serviceLoginUrl, err := usermgr.GetLoginUrl()
-	if err != nil {
-		return "", err
+func New(miAccountCookie string) *MiAccount {
+	return &MiAccount{
+		Cookie:  miAccountCookie,
+		Timeout: 5 * time.Second,
 	}
-	stsUrl, err := getSTSUrl(serviceLoginUrl)
-	if err != nil {
-		return "", err
-	}
-	return getMicloudCookie(stsUrl)
 }
 
-func getSTSUrl(serviceLoginUrl string) (string, error) {
+type MiAccount struct {
+	Cookie  string
+	Timeout time.Duration
+}
+
+func (m *MiAccount) GenMiCloudCookie() (string, error) {
+	serviceLoginUrl, err := GetLoginUrl()
+	if err != nil {
+		return "", err
+	}
+	stsUrl, err := m.getSTSUrl(serviceLoginUrl)
+	if err != nil {
+		return "", err
+	}
+	return m.getMiCloudCookie(stsUrl)
+}
+
+func (m *MiAccount) GetServiceToken() string {
+	return parse.GetValueByKey(m.Cookie, "serviceToken")
+}
+
+func (m *MiAccount) getSTSUrl(serviceLoginUrl string) (string, error) {
 	req := request.NewGet(serviceLoginUrl, nil)
-	req.Header.Add("Cookie", cookie.GetMiaccountCookie())
-	_, resp, err := request.DoRequest(req)
+
+	req.Header.Add("Cookie", m.Cookie)
+	_, resp, err := request.DoRequest(req, request.Timeout(m.Timeout))
 	if err != nil {
 		return "", err
 	}
@@ -35,13 +51,14 @@ func getSTSUrl(serviceLoginUrl string) (string, error) {
 	return location, nil
 }
 
-func getMicloudCookie(stsUrl string) (string, error) {
+func (m *MiAccount) getMiCloudCookie(stsUrl string) (string, error) {
 	req := request.NewGet(stsUrl, nil)
-	req.Header.Set("Cookie", cookie.GetMiaccountCookie())
-	_, resp, err := request.DoRequest(req)
+	req.Header.Set("Cookie", m.Cookie)
+	_, resp, err := request.DoRequest(req, request.Timeout(m.Timeout))
 	if err != nil {
 		return "", err
 	}
+
 	values := resp.Header.Values("Set-Cookie")
 	if len(values) == 0 {
 		return "", errors.New("no cookies in sts resp")
